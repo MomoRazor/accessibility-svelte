@@ -7,14 +7,65 @@
 		accessibility = createAccessibility();
 	});
 
-	const enlarge = () => {
+	const reset = () => {
+		if (!accessibility) {
+			console.error('Accessibility instance is not initialized');
+			return;
+		}
+		try {
+			accessibility.resetState();
+		} catch (error) {
+			console.error('Error creating accessibility instance:', error);
+		}
+	};
+
+	const enlargeFontSize = () => {
 		if (!accessibility) {
 			console.error('Accessibility instance is not initialized');
 			return;
 		}
 		try {
 			accessibility.alterTextSize(20);
-			accessibility.confirmState();
+			accessibility.runState();
+		} catch (error) {
+			console.error('Error creating accessibility instance:', error);
+		}
+	};
+
+	const minimizeFontSize = () => {
+		if (!accessibility) {
+			console.error('Accessibility instance is not initialized');
+			return;
+		}
+		try {
+			accessibility.alterTextSize(5);
+			accessibility.runState();
+		} catch (error) {
+			console.error('Error creating accessibility instance:', error);
+		}
+	};
+
+	const enlargeLineHeight = () => {
+		if (!accessibility) {
+			console.error('Accessibility instance is not initialized');
+			return;
+		}
+		try {
+			accessibility.alterLineHeight(20);
+			accessibility.runState();
+		} catch (error) {
+			console.error('Error creating accessibility instance:', error);
+		}
+	};
+
+	const minimizeLineHeight = () => {
+		if (!accessibility) {
+			console.error('Accessibility instance is not initialized');
+			return;
+		}
+		try {
+			accessibility.alterLineHeight(5);
+			accessibility.runState();
 		} catch (error) {
 			console.error('Error creating accessibility instance:', error);
 		}
@@ -27,16 +78,65 @@
 		}
 		try {
 			accessibility.toggleInvertColors();
-			accessibility.confirmState();
+			accessibility.runState();
+		} catch (error) {
+			console.error('Error creating accessibility instance:', error);
+		}
+	};
+
+	const toggleGrey = () => {
+		if (!accessibility) {
+			console.error('Accessibility instance is not initialized');
+			return;
+		}
+		try {
+			accessibility.toggleColorGreyScale();
+			accessibility.runState();
+		} catch (error) {
+			console.error('Error creating accessibility instance:', error);
+		}
+	};
+
+	const textToSpeech = () => {
+		if (!accessibility) {
+			console.error('Accessibility instance is not initialized');
+			return;
+		}
+		try {
+			accessibility.textToSpeech('Hello, this is a test of the text to speech functionality.');
+			accessibility.runState();
 		} catch (error) {
 			console.error('Error creating accessibility instance:', error);
 		}
 	};
 </script>
 
-<h1>Welcome to your library project</h1>
-<p>Create your package using @sveltejs/package and preview/showcase your work with SvelteKit</p>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<div>
+	<h1>Welcome to your library project</h1>
+	<p>Create your package using @sveltejs/package and preview/showcase your work with SvelteKit</p>
+	<p>
+		Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation
+	</p>
 
-<button onclick={enlarge}>Enlarge</button>
-<button onclick={toggleInvert}>Invert</button>
+	<button onclick={reset}>Reset</button>
+	<p>Font Size:</p>
+	<button onclick={enlargeFontSize}>Enlarge</button>
+	<button onclick={minimizeFontSize}>Minimize</button>
+	<p>Line Height:</p>
+	<button onclick={enlargeLineHeight}>Enlarge</button>
+	<button onclick={minimizeLineHeight}>Minimize</button>
+	<p>Colours:</p>
+	<button onclick={toggleInvert}>Invert</button>
+	<button onclick={toggleGrey}>grey</button>
+	<p>Text to Speech:</p>
+	<button onclick={textToSpeech}>Speak</button>
+</div>
+
+<style>
+	p {
+		color: white;
+	}
+	div {
+		background-color: darkgreen;
+	}
+</style>

@@ -1,48 +1,137 @@
-export const getDefaultStyles = ():
-	| { fontSize: number; spacing: number; lineHeight: number }
-	| undefined => {
-	const computedStyle = window.getComputedStyle(document.documentElement);
+import {
+	class_prefix,
+	local_storage_prefix,
+	type AccessibilityState,
+	type LocalCSSClass
+} from './constants.js';
 
-	// Get the root font size (default is usually 16px)
-	const fontSize = parseFloat(computedStyle.fontSize);
+export const Utilities = () => {
+	const getDefaultStyles = (
+		ref: Document
+	): { fontSize?: number; spacing?: number; lineHeight?: number } | undefined => {
+		if (!window) {
+			throw new Error('Window is not defined');
+		}
 
-	// Get the default letter spacing (default is usually 0px, converted to multiplier)
-	const spacing = parseFloat(computedStyle.letterSpacing) || 0;
+		if (!ref.documentElement) {
+			throw new Error('Document element is not defined');
+		}
 
-	// Get the default line height (default is usually 1.5, converted to multiplier)
-	const lineHeight = parseFloat(computedStyle.lineHeight) || 1.5;
+		const computedStyle = window.getComputedStyle(ref.documentElement);
 
-	return { fontSize, spacing, lineHeight };
-};
+		// Get the root font size (default is usually 16px)
+		const fontSize = computedStyle.fontSize ? parseFloat(computedStyle.fontSize) : undefined;
 
-export const addCSSClass = (className: string, css: string) => {
-	const body = document.body || document.querySelector('body');
+		// Get the default letter spacing (default is usually 0px, converted to multiplier)
+		const spacing = computedStyle.letterSpacing
+			? parseFloat(computedStyle.letterSpacing)
+			: undefined;
 
-	if (body.classList.contains(className)) {
-		console.info(`Class ${className} already exists`);
-		return;
-	}
+		// Get the default line height (default is usually 1.5, converted to multiplier)
+		const lineHeight = computedStyle.lineHeight ? parseFloat(computedStyle.lineHeight) : undefined;
 
-	const sheet = document.createElement('style');
-	sheet.appendChild(
-		document.createTextNode(`
-        .${className} {
-            ${css}
-        }    
-    `)
-	);
-	body.appendChild(sheet);
-};
+		return { fontSize, spacing, lineHeight };
+	};
 
-export const addCSS = (css: string) => {
-	const body = document.body || document.querySelector('body');
+	const getListOfCSSClasses = (ref: Document) => {
+		if (!ref.documentElement) {
+			throw new Error('Document element is not defined');
+		}
+		const allCSSClasses: string[] = [];
+		const sheets = Array.from(ref.styleSheets);
+		const rules = sheets.map((sheet) => Array.from(sheet.cssRules)).flat();
 
-	if (body.classList.contains(css)) {
-		console.info(`Class ${css} already exists`);
-		return;
-	}
+		for (const rule of rules) {
+			const name = rule.cssText.slice(0, rule.cssText.indexOf('{')).trim();
 
-	const sheet = document.createElement('style');
-	sheet.appendChild(document.createTextNode(css));
-	body.appendChild(sheet);
+			if (name[0] === '.') {
+				allCSSClasses.push(name.slice(1, name.length).trim());
+			}
+		}
+
+		return allCSSClasses;
+	};
+
+	const defineCSSClasses = (
+		ref: Document,
+		classes: {
+			className: LocalCSSClass;
+			css: string;
+		}[]
+	) => {
+		const head = ref.head || ref.querySelector('head');
+
+		if (!head) {
+			throw new Error('Head is not defined');
+		}
+
+		const sheet = ref.createElement('style');
+
+		for (let i = 0; i < classes.length; i++) {
+			const finalClassName = `${class_prefix}${classes[i].className}`;
+
+			const cssClasses = getListOfCSSClasses(ref);
+
+			if (cssClasses.includes(finalClassName)) {
+				console.info(`Class ${finalClassName} already exists`);
+				return;
+			}
+			sheet.appendChild(
+				ref.createTextNode(`
+			.${finalClassName} {
+				${classes[i].css}
+			}    
+		`)
+			);
+		}
+
+		head.appendChild(sheet);
+	};
+
+	const toggleCSSClassOnDocument = (className: LocalCSSClass, value: boolean, ref: Document) => {
+		if (!ref.documentElement) {
+			throw new Error('Document not found');
+		}
+
+		const finalClassName = `${class_prefix}${className}`;
+
+		if (value === true) {
+			ref.documentElement.classList.add(finalClassName);
+			return;
+		} else {
+			ref.documentElement.classList.remove(finalClassName);
+			return;
+		}
+	};
+
+	const saveStateToLocalStorage = (state: AccessibilityState) => {
+		if (!window) {
+			throw new Error('Window is not defined');
+		}
+
+		window.localStorage.setItem(`${local_storage_prefix}-state`, JSON.stringify(state));
+	};
+
+	const getStateFromLocalStorage = (): AccessibilityState | null => {
+		if (!window) {
+			throw new Error('Window is not defined');
+		}
+
+		const state = window.localStorage.getItem(`${local_storage_prefix}-state`);
+
+		if (state) {
+			return JSON.parse(state);
+		}
+
+		return null;
+	};
+
+	return {
+		getDefaultStyles,
+		getListOfCSSClasses,
+		defineCSSClasses,
+		toggleCSSClassOnDocument,
+		saveStateToLocalStorage,
+		getStateFromLocalStorage
+	};
 };
